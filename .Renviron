@@ -1,0 +1,16 @@
+
+############### AWS RDS Mishon Database Connection Strings #########################
+
+rds_mishondb_host           = mishondb.cksqd01ntanf.ca-central-1.rds.amazonaws.com
+rds_mishondb_port           = 3306
+rds_mishondb_dbname         = mishondb
+rds_mishondb_user           = mishondbuser
+rds_mishondb_password       = bCYrpeE2p80!N8
+
+############### ODOO Mishon Database Connection Strings ############################################
+rds_odoodb_host           = odoo.niche-industries.com
+rds_odoodb_port           = 5432
+rds_odoodb_dbname         = nicheindustries
+rds_odoodb_user           = powerbi
+rds_odoodb_password       = XAviz5vFEGfFj2IYioGTfRFtrUpIQl
+
