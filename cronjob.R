@@ -5,6 +5,7 @@ setwd("/root/cron")
 source("./Seq1__companywideInventory.R"             ,local=TRUE)$value
 source("./Seq13_Slow_Moving_Products.R"   ,local=TRUE)$value
 source("./Seq14_Inventory_OOS.R"   ,local=TRUE)$value
+source("./Seq18_Replenishment_Report.R", local=TRUE)$value
 
 
 
@@ -76,9 +77,23 @@ job14_Res <- tryCatch(
   })
 gc()
 
+print(glue("Generating  update_Replenishment_Report on {Sys.time()}"))
+
+job18_Res <- tryCatch(
+  {
+    
+    job18_Res <- update_Replenishment_Report()
+    
+  },
+  error=function(e)
+  {
+    return(InitialDF)
+  })
+
+gc()
 
 
-finalDF <- rbind(job1_Res,job13_Res,job14_Res)
+finalDF <- rbind(job1_Res,job13_Res,job14_Res,job18_Res)
 
 rds_mishondb <- tryCatch(
   {

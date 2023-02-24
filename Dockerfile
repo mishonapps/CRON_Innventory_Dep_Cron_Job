@@ -53,6 +53,7 @@ COPY ./.Renviron 			                	/root/cron/.Renviron
 COPY ./Seq1__companywideInventory.R             /root/cron/Seq1__companywideInventory.R
 COPY ./Seq13_Slow_Moving_Products.R   /root/cron/Seq13_Slow_Moving_Products.R
 COPY ./Seq14_Inventory_OOS.R   /root/cron/Seq14_Inventory_OOS.R
+COPY ./Seq18_Replenishment_Report.R /root/cron/Seq18_Replenishment_Report.R
 
 
 RUN touch /home/cron.log
