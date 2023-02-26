@@ -57,4 +57,38 @@ Launch_Date         |  text       | When the product was first launched
 Last_Updated_Date   |  text       | Last_Updated_Date
 
 # Out of stock Inventory Report
+This function helps us to determine the products that are at risk of out of stock based on forecasted quantity, on hand quantity, Incoming dates, MOQ and lead times.
+This Reports data will be saved in the following table of mishondb
+
+**Table Schema 1:** *oos_inventory_report*
+COLUMN_NAME                    | DATA_TYPE |  Comment
+-------------------------------|-----------|----------------------------------
+ID                             | int       |  Unique ID
+sku                            | text      |  Purcahse SKU
+min_qty                        | double    |  min_qty
+delivery_lead_time             | bigint    |  delivery_lead_time
+QtySold_YTD                    | double    |  QtySold_YTD
+QtySold_lastYear               | double    |  QtySold_lastYear
+Forecasted_Annual_Qty          | double    |  Forecasted_Annual_Qty
+CHES_on_hand                   | double    |  CHES_on_hand
+ND_on_hand                     | double    |  ND_on_hand
+GA_on_hand                     | double    |  GA_on_hand
+Total_on_hand                  | double    |  Total_on_hand
+Next_receipt_Date              | text      |  next receiving date
+booking_reference              | text      |  from stock moves
+On_Order_Qty                   | double    |  On_Order_Qty
+Days_Untill_OOS                | double    |  Days untill out of stock
+qty_req_after_oos_before_recv  | double    |  qty_req_after_oos_before_recv
+OOS_Date                       | text      |  Out of stock Date
+OOS_before_Receiving           | text      |  will the sku be OOS before Receiving
+Days_between_oos_receiving     | double    |  Days between Out of stock and next receiving date
+Risk_Status                    | text      |  Whether the product is at risk or not
+Product_Status                 | text      |  Product_Status
+height                         | double    |  height
+width                          | double    |  width
+length                         | double    |  length
+Master_Carton_Qty              | double    |  Master_Carton_Qty
+forecasted_delivery_date       | text      |  forecasted_delivery_date
+Last_Updated_Date              | text      |  Last_Updated_Date
+
 
