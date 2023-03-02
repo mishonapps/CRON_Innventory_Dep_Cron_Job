@@ -166,7 +166,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
         # print(i)
         
       }
-      
+     
       summ_SalesDF <- compDF3 %>% group_by(SKU) %>%summarise(QtySold_YTD = sum(QtySold_YTD),
                                                              QtySold_lastYear  = sum(QtySold_lastYear))
       
@@ -226,6 +226,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
         qty_req_after_oos_before_recv = numeric(0)
         
       )
+      # browser()
       for(s in 1:dim(req_product)[1])
       {
         print(s)
@@ -233,10 +234,13 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
         
         dateSeq_forecast <- seq(Sys.Date(),Sys.Date()+364,1)
         
+        dateSeq_forecast <- str_replace_all(dateSeq_forecast,"02-29","03-01")
+        
         dateFormatted = data.frame(Date = sapply(str_split(dateSeq_forecast,"-"),function(x) {return(paste(x[2],x[3],sep="-"))}),
                                    id=seq(1,365))
         
-        sec_seasonality <- seasonality[seasonality$SKU==prdctInfo$sku,]
+        sec_seasonality <- seasonality[seasonality$SKU==prdctInfo$sku &
+                                         seasonality$Date %in% dateFormatted$Date,]
         
         sec_seasonality_2 = left_join(sec_seasonality,dateFormatted,by="Date")
         
@@ -480,6 +484,8 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
         {
           return(NULL)
         })
+      
+      # browser()
       
       #
       if(!is.null(rds_mishondb_con) & dim(join4_0_2)[1]>0)
