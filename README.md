@@ -7,6 +7,7 @@ Here we take daily inventory from FTP server (companywideinventory).
 
 **Points to remember**
 1) ND,CF and GA inventory Quantites are from SX, However Total Quantity(is not the sum of all the three quantites) instead it is from CA
+**DO NOT ** use Total Quantities for making oprational decisions
           
           What is the difference between SX and CA Quantites?
           SX Quantity = This the total on hand quantity (Doesn't matter if they are available to sell or not)
