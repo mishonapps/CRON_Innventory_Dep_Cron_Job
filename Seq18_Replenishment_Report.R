@@ -70,6 +70,16 @@ update_Replenishment_Report <- function(){
         return(NULL)
       })
     
+    instockDF <- tryCatch(
+      {
+        instockDF <- dbGetQuery(rds_mishondb,"select * from product_instock")
+      },
+      error=function(e)
+      {
+        return(NULL)
+      })
+    
+    
     reqSKUs <- paste0("'",inv_consp_Pct$SKU,"'",collapse=",")
     
     
@@ -115,7 +125,7 @@ update_Replenishment_Report <- function(){
     
     purchaseOrder <- tryCatch(
       {
-        # browser()
+        # #
         purchaseOrder <- dbGetQuery(rds_odoodb,glue("select po.name,product.default_code,partner.name,price_unit,pol.product_qty as qty_received,date(po.date_order) AS date_order,pol.state,pol.sequence from purchase_order_line as pol 
                                             inner JOIN  purchase_order AS po ON po.id=pol.order_id INNER join product_product as product on product.id = pol.product_id 
                                             inner join res_partner as partner on partner.id=pol.partner_id where product.default_code in ({reqSKUs}) and pol.state!='draft'"))
@@ -144,12 +154,12 @@ update_Replenishment_Report <- function(){
     DBI::dbDisconnect(rds_mishondb)
     
     #  
-    # browser()
+    # #
     if(!is.null(productQuantityData)& !is.null(inv_consp_Pct) & !is.null(min_max)&
        !is.null(supplierInfo)& !is.null(packagingInfo) & !is.null(stock_Move)&
-       !is.null(purchaseOrder) & !is.null(todays_inventory) )
+       !is.null(purchaseOrder) & !is.null(todays_inventory) & !is.null(instockDF) )
     {
-      
+      # #
       
       # productQuantityData1 <- productQuantityData%>%filter(!grepl("8TEN|KOOZ",Product))
       todays_inventory1 <- todays_inventory%>%filter(!grepl("8TEN|KOOZ",Product))
@@ -184,7 +194,7 @@ update_Replenishment_Report <- function(){
       
       ##############Check other Conditions to exclude interco 
       stock_Move2 <- stock_Move%>%filter(as.Date(date)>=Sys.Date()-30 &
-                                           ( booking_reference!="cancel" | is.na(booking_reference)) &
+                                           ( !grepl("cancel|Cancel",booking_reference) | is.na(booking_reference)) &
                                                 (source == 'Partner Locations/Vendors'))%>%group_by(sku)%>%summarise(On_Order_Qty=sum(product_qty))
       
       # 
@@ -194,7 +204,7 @@ update_Replenishment_Report <- function(){
       join6$On_Order_Qty[is.na(join6$On_Order_Qty)] = 0
       
       join6$IS_Order_Required = join6$On_Order_Qty+join6$Total_Quantity<=join6$Min_Value
-      # browser()
+      # #
       join6$OrderQty = ifelse(join6$IS_Order_Required,join6$Max_Value-(join6$On_Order_Qty+join6$Total_Quantity),0)
       
       join6$is_received[is.na(join6$is_received)] = "FALSE"
@@ -202,11 +212,29 @@ update_Replenishment_Report <- function(){
       join7 <- join6%>%mutate(Min_Value_Final = ifelse(is.na(Min_Value),1,Min_Value),
                               Max_Value_Final = ifelse(is.na(Max_Value),ifelse(is.na(min_qty),Min_Value_Final,Min_Value_Final +min_qty ),Max_Value))
       
+      
+      
+      #
+      
+      # build_instock_distribution <- function(SKU)
+      # {
+      #   reqSKUInfo = instockDF[grepl(SKU,instockDF$Bundle_Components),]%>%filter(!grepl("GHO",Product))
+      #   reqSKUInfo$pctInstock <- (reqSKUInfo$instock/150)*100
+      #   
+      #   return(paste0(reqSKUInfo$Product,"(",reqSKUInfo$pctInstock,"%)",collapse=","))
+      # 
+      # }
+      # 
+      # join7<- join7%>%rowwise%>%mutate(last_150_pct_instock = build_instock_distribution(SKU))
+      # 
+      # 
+      
+      
       # join6$Final_Order_QTY = ""
       # join6$Notes = ""
       # join6$Approx_Order_Value = ""
       # join6$Years_Of_Inventory = ""
-      # browser()
+      # #
       finalDF <- join7%>%select(SKU,
                                 Vendor=name,
                                 Is_Received=is_received,
@@ -236,7 +264,7 @@ update_Replenishment_Report <- function(){
       finalDF$Last_Updated_Date <- Sys.Date()
       
       
-      # browser()
+      # #
       #
       
       rds_mishondb <- tryCatch(

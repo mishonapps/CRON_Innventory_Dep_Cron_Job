@@ -113,7 +113,10 @@ updateCompanyWideInventory <- function()
                                                       "Attribute10Name","Attribute11Name","Attribute12Name",glue("V{length(productData0)}")))
             
             
-            productData <- productData1%>%select(
+           # #
+            
+            
+             productData <- productData1%>%select(
               Inventory_Number=`Inventory Number`,
               Warehouse_Quantity=`Attribute5Value`,
               Retail_Store_Quantity=`Attribute7Value`,
@@ -165,11 +168,12 @@ updateCompanyWideInventory <- function()
             
             #Data of Mis Ghost products with No Bundle Components
             data_Mis_GHO_NB <- data15_MIS[grep(pattern="GHO",data15_MIS$Inventory_Number),]%>%filter(Bundle_Components=="")
-            
+           
             #Build Bundle Components for Ghost products
             for(p in 1:length(data_Mis_GHO_NB$Inventory_Number))
             {
               # p=1
+              # print(p)
               product = data_Mis_GHO_NB$Inventory_Number[p]
               
               reqProduct <- str_extract(product,pattern = "15MIS\\_\\w+\\-\\w{3}\\-\\d+")
@@ -198,36 +202,36 @@ updateCompanyWideInventory <- function()
             Final_MIS<- rbind(Final_MIS_C,Final_MIS_NC)
             
             data_FBA <-  data15_NPar[grep(pattern="15FBA",data15_NPar$Inventory_Number),]
-            
+            #
             #Since FBA Products does not have any bundle component information, get them from corresponding KIT/MIS
             for(j in 1:length(data_FBA$Inventory_Number))
             {
-              # x=76
+              # j=460
+              # print(j)
               product <- data_FBA$Inventory_Number[j]
-              equivalentProduct = ifelse(length(grep("\\MK\\d+",product))==0,gsub("15FBA","15MIS",product),gsub("15FBA","15KIT",product))
+              equivalentProduct = unlist(str_split(ifelse(length(grep("\\MK\\d+",product))==0,gsub("15FBA","15MIS",product),gsub("15FBA","15KIT",product)),"_G1"))[1]
               kit = data15_NPar[data15_NPar$Inventory_Number %in% equivalentProduct,]
               
               isMIS <- any(grep(pattern="15MIS",kit$Inventory_Number))
               
-              
-              
+
               if(isMIS)
               {
                 kit2 = Final_MIS[Final_MIS$Inventory_Number %in% equivalentProduct,]
                 data_FBA[j,"Inventory_Number"]<- product
-                data_FBA[j,"Bundle_Components"]<- kit2$Bundle_Components
-                data_FBA[j,"Core_Component"]<- kit2$Core_Component
-                data_FBA[j,"Classification"]<- kit2$Classification
+                data_FBA[j,"Bundle_Components"]<- ifelse(length(kit2$Bundle_Components)>0,kit2$Bundle_Components,"")
+                data_FBA[j,"Core_Component"]<- ifelse(length(kit2$Core_Component)>0,kit2$Core_Component,"")
+                data_FBA[j,"Classification"]<-ifelse(length(kit2$Classification)>0,kit2$Classification,"")
               }
               else
               {
                 data_FBA[j,"Inventory_Number"]<- product
-                data_FBA[j,"Bundle_Components"]<- kit$Bundle_Components
-                data_FBA[j,"Core_Component"]<- kit$Core_Component
-                data_FBA[j,"Classification"]<- kit$Classification
+                data_FBA[j,"Bundle_Components"]<- ifelse(length(kit$Bundle_Components)>0,kit$Bundle_Components,"")
+                data_FBA[j,"Core_Component"]<- ifelse(length(kit$Core_Component)>0,kit$Core_Component,"")
+                data_FBA[j,"Classification"]<- ifelse(length(kit$Classification)>0,kit$Classification,"")
               }
             }
-            
+            #
             #
             productData_initial <- rbind(Final_MIS,data_kits_prn_BC,data_FBA)
             
@@ -528,7 +532,9 @@ updateCompanyWideInventory <- function()
             productData_Final$Component_Type[grep("KIT.*G\\d{1,2}",productData_Final$Product)] <- "KIT_GHOST"
             productData_Final$Component_Type[grep("FBA",productData_Final$Product)] <- "FBA"
             productData_Final$Component_Type[grep("FBA.*MPK",productData_Final$Product)] <- "FBA_MPK"
+            productData_Final$Component_Type[grep("FBA.*G\\d{1,2}",productData_Final$Product)] <- "FBA_GHOST"
             productData_Final$Component_Type[grep("PRN",productData_Final$Product)] <- "PRN"
+            productData_Final$Component_Type[grep("PRN*G\\d{1,2}",productData_Final$Product)] <- "PRN_GHOST"
             
             #
             finalDF <- productData_Final[!is.na(productData_Final$Product), ]
@@ -536,6 +542,7 @@ updateCompanyWideInventory <- function()
             
             finalDF =  finalDF[!grepl("KOOZIE|8TEN",finalDF$Product),]
             
+            #
             
             ####Validate Number of Products
            # #
