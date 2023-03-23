@@ -79,6 +79,15 @@ update_Replenishment_Report <- function(){
         return(NULL)
       })
     
+    firstReceived <- tryCatch(
+      {
+        firstReceived <- dbGetQuery(rds_mishondb,"select sku,DATE as first_received_date from firstReceived")
+      },
+      error=function(e)
+      {
+        return(NULL)
+      })
+    
     
     reqSKUs <- paste0("'",inv_consp_Pct$SKU,"'",collapse=",")
     
@@ -150,6 +159,15 @@ update_Replenishment_Report <- function(){
         return(NULL)
       })
     
+    forecastStatusData <- tryCatch(
+      {
+        forecastStatusData = dbGetQuery(rds_mishondb,"select * from demand_Forecast_status_odc")
+      },
+      error=function(e)
+      {
+        return(NULL)
+      })
+    
     DBI::dbDisconnect(rds_odoodb)
     DBI::dbDisconnect(rds_mishondb)
     
@@ -214,36 +232,36 @@ update_Replenishment_Report <- function(){
       
       
       
+      
+      
       #
       
-      # build_instock_distribution <- function(SKU)
-      # {
-      #   reqSKUInfo = instockDF[grepl(SKU,instockDF$Bundle_Components),]%>%filter(!grepl("GHO",Product))
-      #   reqSKUInfo$pctInstock <- (reqSKUInfo$instock/150)*100
-      #   
-      #   return(paste0(reqSKUInfo$Product,"(",reqSKUInfo$pctInstock,"%)",collapse=","))
-      # 
-      # }
-      # 
-      # join7<- join7%>%rowwise%>%mutate(last_150_pct_instock = build_instock_distribution(SKU))
-      # 
-      # 
+      build_instock_distribution <- function(SKU)
+      {
+        reqSKUInfo = instockDF[grepl(SKU,instockDF$Bundle_Components),]%>%filter(!grepl("GHO",Product))
+        reqSKUInfo$pctInstock <- (reqSKUInfo$instock/150)*100
+
+        return(paste0(reqSKUInfo$Product,"(",reqSKUInfo$pctInstock,"%)",collapse=","))
+
+      }
+
+      join8<- join7%>%rowwise%>%mutate(last_150_pct_instock = build_instock_distribution(SKU))
+
+   
       
-      
-      # join6$Final_Order_QTY = ""
-      # join6$Notes = ""
-      # join6$Approx_Order_Value = ""
-      # join6$Years_Of_Inventory = ""
+      join9 <- left_join(join8,forecastStatusData%>%select(SKU,forecast_status),by="SKU")%>%left_join(.,firstReceived,by=c("SKU"="sku"))
+   
       # #
-      finalDF <- join7%>%select(SKU,
+      finalDF <- join9%>%select(SKU,
                                 Vendor=name,
-                                Is_Received=is_received,
+                                first_receipt_date=first_received_date,
                                 MOQ=min_qty,
                                 Sales_Last30_Days=Sales_Last30,
-                                Instock_Pct_150Days=instock_Pct_150,
+                                Instock_Pct_150Days=last_150_pct_instock,
                                 R12_ND_Forecast=annualForecast_ND,
                                 R12_CF_Forecast=annualForecast_CF,
                                 R12_Forecast=forecast,
+                                forecast_status = forecast_status,
                                 Last_Purchased_Order,
                                 Last_Purchased_Price = price_unit,
                                 Last_Purchased_Qty = qty_received,
