@@ -164,7 +164,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       
       prdct_template1 <- prdct_template %>% group_by(sku)%>%slice(which.min(sequence))
       
-      validSalesData <- left_join(productInventory,salesData,by=c("Product"="SKU"))
+      validSalesData <- left_join(productInventory%>%filter(Bundle_Components!=""),salesData,by=c("Product"="SKU"))
       validSalesData[is.na(validSalesData)] <- 0
       
       
@@ -204,7 +204,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       productData1$refSKU = str_extract_all(productData1$Product,pattern="\\w{1}\\-\\w{3}\\-\\d{4}")%>%unlist()
       
       # #
-      
+      #
       join1 <- left_join(prdct_template1%>%select(sku,min_qty,delivery_lead_time=delay,cf_avail,nd_avail,ga_avail),summ_SalesDF,by=c("sku"="SKU"))
       join2 <- left_join(join1,forecastData_Summ,by=c("sku"="SKU"))
       join3 <- left_join(join2,productData1%>%select(CHES_on_hand,ND_on_hand,GA_on_hand,refSKU),by=c("sku"="refSKU"))
@@ -402,7 +402,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       join4$Product_Status <- ifelse(join4$Total_on_hand ==0 & (join4$Forecasted_Annual_Qty + join4$QtySold_lastYear + join4$QtySold_YTD>0 ),"Out of stock",
                                      ifelse(join4$Total_on_hand ==0& (join4$Forecasted_Annual_Qty + join4$QtySold_lastYear + join4$QtySold_YTD==0), "New Product","In Stock"))
       
-      # browser()
+      # #
       
       fill_qty_req <- join4[join4$Days_between_oos_receiving>0 & join4$qty_req_after_oos_before_recv==0 & join4$Forecasted_Annual_Qty>0,]
       #
@@ -485,14 +485,17 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       join4_0_2$Last_Updated_Date <- Sys.Date()
       join4_0_2$booking_reference = stringi::stri_enc_toascii(as.character(join4_0_2$booking_reference))
       
+      join4_0_2$cf_avail = as.character(join4_0_2$cf_avail)
+      join4_0_2$nd_avail = as.character(join4_0_2$nd_avail)
+      join4_0_2$ga_avail = as.character(join4_0_2$ga_avail)
       
       finalResultDF <- join4_0_2%>%select(
         sku,
         product_status,
         purchase_ok,
-        as.character(cf_avail),
-        as.character(nd_avail),
-        as.character(ga_avail),
+        cf_avail,
+        nd_avail,
+        ga_avail,
         CHES_on_hand,
         ND_on_hand,
         GA_on_hand,
@@ -549,7 +552,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
         })
       
       # #
-      
+      #
       #
       if(!is.null(rds_mishondb_con) & dim(finalResultDF)[1]>0)
       {

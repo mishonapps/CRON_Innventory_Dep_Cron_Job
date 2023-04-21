@@ -116,12 +116,13 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       
       prdct_template1 <- prdct_template %>% group_by(sku)%>%slice(which.min(sequence))
       
-      validSalesData <- left_join(productInventory,salesData,by=c("Product"="SKU"))
+      validSalesData <- left_join(productInventory%>%filter(Bundle_Components!=""),salesData,by=c("Product"="SKU"))
       validSalesData[is.na(validSalesData)] <- 0
       # #
       compDF3 <- data.frame()
       for(i in 1:dim(validSalesData)[1])
       {
+         # print(i)
         req_product <- validSalesData[i,]
         reqBundleComponents <- productInventory$Bundle_Components[productInventory$Product %in% req_product$Product]
         budleComponents <- unlist(strsplit(reqBundleComponents,","))
@@ -138,7 +139,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
         
         compDF3<- rbind(compDF1 %>% select(-c("Product","req_quant")),compDF3)
         
-        # print(i)
+       
         
       }
       

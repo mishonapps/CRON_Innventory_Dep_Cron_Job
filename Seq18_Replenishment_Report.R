@@ -205,7 +205,7 @@ update_Replenishment_Report <- function(){
       
       join3 <- left_join(join2,purchaseOrder2%>%select(SKU=default_code,Last_Purchased_Order=name,price_unit,qty_received),by="SKU")
       
-      join4 <- left_join(join3,min_max%>%select(SKU,Min_Value,Max_Value),by=c("SKU"))
+      join4 <- left_join(join3,min_max%>%select(SKU,Min_Value,Max_Value,Max_Value_No_MOQ),by=c("SKU"))
       
       join5 <- left_join(join4,todays_inventory1%>%select(-Product),by=c("SKU"="refSKU"))
       join5$Total_Quantity[is.na(join5$Total_Quantity)] = 0
@@ -226,9 +226,10 @@ update_Replenishment_Report <- function(){
       join6$OrderQty = ifelse(join6$IS_Order_Required,join6$Max_Value-(join6$On_Order_Qty+join6$Total_Quantity),0)
       
       join6$is_received[is.na(join6$is_received)] = "FALSE"
-      
+    
       join7 <- join6%>%mutate(Min_Value_Final = ifelse(is.na(Min_Value),1,Min_Value),
-                              Max_Value_Final = ifelse(is.na(Max_Value),ifelse(is.na(min_qty),Min_Value_Final,Min_Value_Final +min_qty ),Max_Value))
+                              Max_Value_Final = ifelse(is.na(Max_Value),ifelse(is.na(min_qty),Min_Value_Final,Min_Value_Final +min_qty ),Max_Value),
+                              Max_Value_No_MOQ = Max_Value_No_MOQ)
       
       
       
@@ -270,6 +271,7 @@ update_Replenishment_Report <- function(){
                                 OrderQty,
                                 Re_Order_Min = Min_Value_Final,
                                 Re_Order_Max = Max_Value_Final,
+                                Max_Value_No_MOQ,
                                 On_Order_Qty,
                                 ND_On_Hand_Qty=RTL_Quantity,
                                 CF_On_Hand_Qty=WH_Quantity,
