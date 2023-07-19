@@ -119,6 +119,8 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       validSalesData <- left_join(productInventory%>%filter(Bundle_Components!=""),salesData,by=c("Product"="SKU"))
       validSalesData[is.na(validSalesData)] <- 0
       # #
+      
+      #
       compDF3 <- data.frame()
       for(i in 1:dim(validSalesData)[1])
       {
@@ -143,7 +145,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
         
       }
       
-      # browser()
+      # #
       summ_SalesDF <- compDF3 %>% group_by(SKU) %>%summarise(Qty_Sold_12Months = sum(Qty_Sold_12Months),
                                                              Qty_Sold_24Months = sum(Qty_Sold_24Months),
                                                              QtySold_Total = sum(QtySold_Total))

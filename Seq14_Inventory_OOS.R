@@ -151,7 +151,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
     
     dbDisconnect(conn=rds_odoodb)
     
-    #  
+    #  If Quantity > 1 then consider the first received date else the first receiving
     
     if(!is.null(prdct_template)& !is.null(productInventory) & !is.null(salesData) &
        !is.null(stock_Move) & !is.null(forecastData))
@@ -532,7 +532,7 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       )
       
       
-      
+      # browser()
       
       #
       

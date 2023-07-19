@@ -152,7 +152,6 @@ update_Replenishment_Report <- function(){
         ###Updated as requested by Utsav
         todays_inventory <- dbGetQuery(rds_mishondb,"SELECT Product,WH_Quantity,RTL_Quantity,GA_Quantity,WH_Quantity + RTL_Quantity+ GA_Quantity   as Total_Quantity FROM todays_inventory WHERE Component_Type = 'MIS'")
         
-        
       },
       error=function(e)
       {
@@ -209,6 +208,8 @@ update_Replenishment_Report <- function(){
       
       join5 <- left_join(join4,todays_inventory1%>%select(-Product),by=c("SKU"="refSKU"))
       join5$Total_Quantity[is.na(join5$Total_Quantity)] = 0
+      
+      #
       
       ##############Check other Conditions to exclude interco 
       stock_Move2 <- stock_Move%>%filter(as.Date(date)>=Sys.Date()-30 &
@@ -282,7 +283,7 @@ update_Replenishment_Report <- function(){
       
       
       finalDF$Last_Updated_Date <- Sys.Date()
-      
+      #
       
       # #
       #

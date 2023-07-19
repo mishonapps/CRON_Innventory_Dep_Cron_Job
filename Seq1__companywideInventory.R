@@ -68,7 +68,7 @@ updateCompanyWideInventory <- function()
         reqFiles <- reportFiles[grep(reportFiles,pattern=glue("{reqDate}"))][1]
         
         # #
-       
+       # #
         #### Dowload data from the FTP
         downloadFile <- tryCatch(
           {
@@ -151,7 +151,7 @@ updateCompanyWideInventory <- function()
             
             productData$Auto_DOHT <- as.numeric( productData$Auto_DOHT)
             
-            data15 <- productData[grep(pattern="15\\w{3}",productData$Inventory_Number),]%>%
+            data15 <- productData[grep(pattern="15\\w{3}\\_\\w{1}\\-|15KIT|15PRN|15FBA",productData$Inventory_Number),]%>%
               filter(Classification!="PARENTSKUS")
             
             data15_NPar <-  data15[!grep(pattern="PARENT",data15$Inventory_Number),]
@@ -161,13 +161,13 @@ updateCompanyWideInventory <- function()
             
             data15_MIS <- data15_NPar[grep(pattern="15MIS",data15_NPar$Inventory_Number),]
             
-            data_Mis_NGHO <- data15_MIS[!grep(pattern="GHO",data15_MIS$Inventory_Number),]
+            data_Mis_NGHO <- data15_MIS[!grep(pattern="GHO|G1|G2",data15_MIS$Inventory_Number),]
             
             #Data of Mis Ghost products with Bundle Components
-            data_Mis_GHO_B <- data15_MIS[grep(pattern="GHO",data15_MIS$Inventory_Number),]%>%filter(Bundle_Components!="")
+            data_Mis_GHO_B <- data15_MIS[grep(pattern="GHO|G1|G2",data15_MIS$Inventory_Number),]%>%filter(Bundle_Components!="")
             
             #Data of Mis Ghost products with No Bundle Components
-            data_Mis_GHO_NB <- data15_MIS[grep(pattern="GHO",data15_MIS$Inventory_Number),]%>%filter(Bundle_Components=="")
+            data_Mis_GHO_NB <- data15_MIS[grep(pattern="GHO|G1|G2",data15_MIS$Inventory_Number),]%>%filter(Bundle_Components=="")
            
             #Build Bundle Components for Ghost products
             for(p in 1:length(data_Mis_GHO_NB$Inventory_Number))
@@ -203,10 +203,11 @@ updateCompanyWideInventory <- function()
             
             data_FBA <-  data15_NPar[grep(pattern="15FBA",data15_NPar$Inventory_Number),]
             #
+            # #
             #Since FBA Products does not have any bundle component information, get them from corresponding KIT/MIS
             for(j in 1:length(data_FBA$Inventory_Number))
             {
-              # j=460
+              # j=568
               # print(j)
               product <- data_FBA$Inventory_Number[j]
               equivalentProduct = unlist(str_split(ifelse(length(grep("\\MK\\d+",product))==0,gsub("15FBA","15MIS",product),gsub("15FBA","15KIT",product)),"_G1"))[1]
@@ -270,6 +271,8 @@ updateCompanyWideInventory <- function()
             )
             #
             #
+            #
+            print("It entered Here...275")
             for(i in 1:length(product_MIS_NA$Inventory_Number))
             {
               
@@ -285,7 +288,7 @@ updateCompanyWideInventory <- function()
               
               if(length(budleComponents)>0)
               {
-                # print(i)
+               
                 component <- budleComponents%>%str_extract_all(pattern = "15MIS\\_\\w+\\-\\w{3}\\-\\d+|15MIS_Koozie1|15MIS_8TEN")%>%unlist()
                 req_quant <- budleComponents%>%str_extract_all(pattern ="\\=\\d+")%>%unlist()%>%str_replace_all("=","")%>%unlist()%>%as.numeric()
                 
@@ -386,6 +389,8 @@ updateCompanyWideInventory <- function()
               Date = character(0)
             )
             #
+            #
+            print("It entered Here...391")
             for(i in 1:length(data15_KIT_PRN$Inventory_Number))
             {
               # i=432
@@ -541,8 +546,14 @@ updateCompanyWideInventory <- function()
             finalDF$Product <- toupper(finalDF$Product)
             
             finalDF =  finalDF[!grepl("KOOZIE|8TEN",finalDF$Product),]
-            
             #
+            #################Few PRNS were removed from Channel Advisor, However we still need their core como
+            
+            
+            
+            
+            
+            ################################
             
             ####Validate Number of Products
            # #
