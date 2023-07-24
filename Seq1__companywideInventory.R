@@ -526,19 +526,23 @@ updateCompanyWideInventory <- function()
               #
             
             
-            
+            # #
            
             #Adding Component Type Variable
             productData_Final$Component_Type=""
             productData_Final$Component_Type[grep("MIS",productData_Final$Product)] <- "MIS"
+            productData_Final$Component_Type[grep("MIS.*A\\d{1,2}",productData_Final$Product)] <- "MIS_A"
             productData_Final$Component_Type[grep("MIS.*MPK",productData_Final$Product)] <- "MIS_MPK"
+            productData_Final$Component_Type[grep("MIS.*MPK.*A\\d{1,2}",productData_Final$Product)] <- "MIS_MPK_A"
             productData_Final$Component_Type[grep("MIS.*GHO|MIS.*G\\d{1,2}",productData_Final$Product)] <- "MIS_GHOST"
             productData_Final$Component_Type[grep("KIT",productData_Final$Product)] <- "KIT"
+            productData_Final$Component_Type[grep("KIT.*A\\d{1,2}",productData_Final$Product)] <- "KIT_A"
             productData_Final$Component_Type[grep("KIT.*G\\d{1,2}",productData_Final$Product)] <- "KIT_GHOST"
             productData_Final$Component_Type[grep("FBA",productData_Final$Product)] <- "FBA"
             productData_Final$Component_Type[grep("FBA.*MPK",productData_Final$Product)] <- "FBA_MPK"
             productData_Final$Component_Type[grep("FBA.*G\\d{1,2}",productData_Final$Product)] <- "FBA_GHOST"
             productData_Final$Component_Type[grep("PRN",productData_Final$Product)] <- "PRN"
+            productData_Final$Component_Type[grep("PRN*A\\d{1,2}",productData_Final$Product)] <- "PRN_A"
             productData_Final$Component_Type[grep("PRN*G\\d{1,2}",productData_Final$Product)] <- "PRN_GHOST"
             
             #

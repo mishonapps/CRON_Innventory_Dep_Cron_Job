@@ -156,13 +156,15 @@ FROM dailysales WHERE GMV > 0 GROUP BY SKU"))
       productData1 <- productInventory[productInventory$Component_Type=="MIS" & !grepl("KOOZIE|8TEN",productInventory$Product),]
       # productData1 <- productInventory[productInventory$Component_Type=="MIS" & productInventory$Product!="15MIS_KOOZIE1",]
       productData1$refSKU = str_extract_all(productData1$Product,pattern="\\w{1}\\-\\w{3}\\-\\d{4}")%>%unlist()
-      
+      # #
       productData1$Amazon_Launch_Date <- as.Date(productData1$Amazon_Launch_Date,"%m/%d/%Y")
       productData1$Ebay_Launch_Date <- as.Date(productData1$Ebay_Launch_Date,"%m/%d/%Y")
       
       productData1$Min_Launch_Date <- pmin(productData1$Amazon_Launch_Date,productData1$Ebay_Launch_Date,na.rm=TRUE)
       
       final_DF0 <- left_join(productData1,minSalesData,by=c("Product"="SKU"))
+      final_DF0$Min_Sales_Date <- as.Date(final_DF0$Min_Sales_Date)
+      final_DF0$Min_Launch_Date <- as.Date(final_DF0$Min_Launch_Date)
       
       final_DF0$Launch_Date <- pmin(final_DF0$Min_Launch_Date,final_DF0$Min_Sales_Date,na.rm=TRUE)
       
